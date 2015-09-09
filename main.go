@@ -162,7 +162,7 @@ func deleteDMs(endpoint string, maxId int64, c *http.Client) (bool, error) {
 			for ; l > 0; l-- {
 				r := <-responseC
 				if r.err != nil {
-					log.Println(fmt.Sprintf("DM delete err: %s", err))
+					log.Println(fmt.Sprintf("DM delete err: %v", err))
 					continue
 				}
 				if r.rate {
