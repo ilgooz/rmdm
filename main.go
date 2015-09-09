@@ -84,7 +84,6 @@ func makeClients() []*http.Client {
 		if err != nil {
 			log.Fatalln(err)
 		}
-
 		clients = append(clients, client)
 	}
 
@@ -107,8 +106,6 @@ LOOP:
 
 	for {
 		for _, client := range clients {
-			fmt.Println("scanning for received DMs")
-
 			rate, err := deleteDMs("direct_messages", recentDeleted, client)
 			if err != nil {
 				log.Fatalln(err)
@@ -116,8 +113,6 @@ LOOP:
 			if rate {
 				continue
 			}
-
-			fmt.Println("scanning for sent DMs")
 
 			rate, err = deleteDMs("direct_messages/sent", recentOwnDeleted, client)
 			if err != nil {
@@ -143,6 +138,8 @@ type RateErrResponse struct {
 
 func deleteDMs(endpoint string, maxId int64, c *http.Client) (bool, error) {
 	for {
+		fmt.Println("scanning for " + endpoint)
+
 		rate, ids, err := getDMIds(endpoint, maxId, c)
 		if rate || err != nil {
 			return rate, err
@@ -164,14 +161,16 @@ func deleteDMs(endpoint string, maxId int64, c *http.Client) (bool, error) {
 
 			for ; l > 0; l-- {
 				r := <-responseC
-				if rate || err != nil {
-					return r.rate, r.err
+				if r.err != nil {
+					log.Println(fmt.Sprintf("DM delete err: %s", err))
+					continue
+				}
+				if r.rate {
+					return r.rate, nil
 				}
 			}
 
 			fmt.Println("deleted")
-
-			return false, nil
 		} else {
 			fmt.Println("there is no DMs to delete")
 			return false, nil
@@ -222,7 +221,7 @@ func deleteDM(id int64, c *http.Client) (bool, error) {
 		"https://api.twitter.com/1.1/direct_messages/destroy.json",
 		url.Values{"id": []string{fmt.Sprintf("%d", id)}})
 	if err != nil {
-		log.Fatalln(err)
+		return false, err
 	}
 	defer resp.Body.Close()
 
