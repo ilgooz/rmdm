@@ -111,6 +111,7 @@ LOOP:
 				log.Fatalln(err)
 			}
 			if rate {
+				fmt.Println("rate limit accourd, will try again with different client")
 				continue
 			}
 
@@ -119,6 +120,7 @@ LOOP:
 				log.Fatalln(err)
 			}
 			if rate {
+				fmt.Println("rate limit accourd, will try again with different client")
 				continue
 			}
 
